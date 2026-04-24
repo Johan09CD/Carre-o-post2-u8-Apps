@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "778815392352",
+    "project_id": "carreno-post2-u8",
+    "storage_bucket": "carreno-post2-u8.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:778815392352:android:694aa42d65f9936e8e5105",
+        "android_client_info": {
+          "package_name": "com.udes.carreno_post2_u8"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBibHxnkQ5Fddm2mRnpEGMfb71FgFrfG94"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,13 +1,13 @@
-// lib/screens/catalog_screen.dart — versión OPTIMIZADA con compute()
+// lib/screens/catalog_screen.dart — con Firebase Performance
 
 import 'dart:convert';
 import 'dart:developer' as dev;
+import 'package:firebase_performance/firebase_performance.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../models/product_model.dart';
 import '../models/catalog_generator.dart';
 
-// Top-level function requerida por compute() — NO puede ser método de clase
 List<Product> _parseProducts(String jsonString) {
   final List<dynamic> raw = jsonDecode(jsonString) as List;
   return raw
@@ -26,18 +26,24 @@ class _CatalogScreenState extends State<CatalogScreen> {
   List<Product> _products = [];
   bool _loading = false;
 
-  // ✅ compute() ejecuta _parseProducts en un Isolate separado
-  Future<void> _loadCatalogOptimized() async {
+  Future<void> _loadCatalogWithTracing() async {
     setState(() => _loading = true);
+
+    // Inicia traza personalizada de Firebase Performance
+    final trace = FirebasePerformance.instance.newTrace('catalog_load');
+    await trace.start();
 
     dev.Timeline.startSync('generateJson');
     final jsonString = generateCatalogJson(1000);
     dev.Timeline.finishSync();
 
-    // El UI thread permanece libre para renderizar animaciones
     dev.Timeline.startSync('compute_parseProducts');
     final products = await compute(_parseProducts, jsonString);
     dev.Timeline.finishSync();
+
+    // Agrega métrica custom a la traza
+    trace.setMetric('product_count', products.length);
+    await trace.stop();
 
     setState(() {
       _products = products;
@@ -72,8 +78,8 @@ class _CatalogScreenState extends State<CatalogScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _loadCatalogOptimized,
-        tooltip: 'Cargar catálogo optimizado',
+        onPressed: _loadCatalogWithTracing,
+        tooltip: 'Cargar catálogo con Firebase',
         child: const Icon(Icons.refresh),
       ),
     );
