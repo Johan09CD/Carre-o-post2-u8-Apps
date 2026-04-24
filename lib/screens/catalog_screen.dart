@@ -1,10 +1,19 @@
-// lib/screens/catalog_screen.dart — versión BLOQUEANTE (para profiling)
+// lib/screens/catalog_screen.dart — versión OPTIMIZADA con compute()
 
 import 'dart:convert';
 import 'dart:developer' as dev;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../models/product_model.dart';
 import '../models/catalog_generator.dart';
+
+// Top-level function requerida por compute() — NO puede ser método de clase
+List<Product> _parseProducts(String jsonString) {
+  final List<dynamic> raw = jsonDecode(jsonString) as List;
+  return raw
+      .map((e) => Product.fromJson(e as Map<String, dynamic>))
+      .toList();
+}
 
 class CatalogScreen extends StatefulWidget {
   const CatalogScreen({super.key});
@@ -17,22 +26,17 @@ class _CatalogScreenState extends State<CatalogScreen> {
   List<Product> _products = [];
   bool _loading = false;
 
-  // ❌ parse en main thread — bloquea el UI thread durante el JSON parsing
-  Future<void> _loadCatalogBlocking() async {
+  // ✅ compute() ejecuta _parseProducts en un Isolate separado
+  Future<void> _loadCatalogOptimized() async {
     setState(() => _loading = true);
 
     dev.Timeline.startSync('generateJson');
     final jsonString = generateCatalogJson(1000);
     dev.Timeline.finishSync();
 
-    dev.Timeline.startSync('jsonDecode');
-    final List<dynamic> raw = jsonDecode(jsonString) as List;
-    dev.Timeline.finishSync();
-
-    dev.Timeline.startSync('mapToProducts');
-    final products = raw
-        .map((e) => Product.fromJson(e as Map<String, dynamic>))
-        .toList();
+    // El UI thread permanece libre para renderizar animaciones
+    dev.Timeline.startSync('compute_parseProducts');
+    final products = await compute(_parseProducts, jsonString);
     dev.Timeline.finishSync();
 
     setState(() {
@@ -60,14 +64,16 @@ class _CatalogScreenState extends State<CatalogScreen> {
           : ListView.builder(
         itemCount: _products.length,
         itemBuilder: (ctx, i) => ListTile(
-          leading: CircleAvatar(child: Text('${_products[i].id}')),
+          leading: CircleAvatar(
+            child: Text('${_products[i].id}'),
+          ),
           title: Text(_products[i].name),
           subtitle: Text('\$${_products[i].price}'),
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _loadCatalogBlocking,
-        tooltip: 'Cargar catálogo',
+        onPressed: _loadCatalogOptimized,
+        tooltip: 'Cargar catálogo optimizado',
         child: const Icon(Icons.refresh),
       ),
     );
