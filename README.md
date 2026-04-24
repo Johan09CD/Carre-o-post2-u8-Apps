@@ -109,12 +109,12 @@ Se integró `firebase_performance` para medir tiempos reales de la operación `c
 ## Capturas de pantalla
 
 ### DevTools Timeline — Antes de compute() (frames rojos)
-![DevTools antes](screenshots/screenshot_devtools_before.png)
+![DevTools antes](capturas/screenshot_devtools_before.png)
 
 ### DevTools Timeline — Después de compute() (mejorado)
-![DevTools después](screenshots/screenshot_devtools_after.png)
+![DevTools después](capturas/screenshot_devtools_after.png)
 
 ### Logcat con Firebase Performance
-![Firebase Logcat](screenshots/screenshot_firebase_logcat.png)
+![Firebase Logcat](capturas/screenshot_firebase_logcat.png)
 
 ---
